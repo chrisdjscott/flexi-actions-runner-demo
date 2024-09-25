@@ -1,0 +1,155 @@
+---
+name: Build on flexi
+on:
+  workflow_dispatch:
+  push:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  provision-runner:
+    name: Provision self-hosted runner on Flexi
+    runs-on: ubuntu-latest
+    env:
+      TF_VAR_tenant_name: "${{ secrets.TENANT_NAME }}"
+      TF_VAR_key_pair: "${{ secrets.KEY_PAIR }}"
+      TF_VAR_github_token: "${{ secrets.TF_GITHUB_TOKEN }}"
+      TF_VAR_flavor_name: "${{ secrets.FLAVOR_NAME }}"
+      TF_VAR_github_org: "${{ github.repository_owner }}"
+      TF_VAR_github_repo: "flexi-actions-runner-demo"
+    outputs:
+      label: ${{ steps.label-gen.outputs.label }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - name: Write clouds.yaml
+        run: |
+          import os
+          with open(os.environ['CLOUDS_YAML_FILE'], 'w') as fh:
+            fh.write(os.environ['CLOUDS_YAML_CONTENT'])
+        shell: python
+        env:
+          CLOUDS_YAML_FILE: "${{ runner.temp }}/clouds.yaml"
+          CLOUDS_YAML_CONTENT: "${{ secrets.CLOUDS_YAML_CONTENT }}"
+      - name: Link clouds.yaml
+        run: |
+          mkdir -p ~/.config/openstack
+          ln -sf ${CLOUDS_YAML_FILE} ~/.config/openstack/clouds.yaml
+        env:
+          CLOUDS_YAML_FILE: "${{ runner.temp }}/clouds.yaml"
+      - name: Copy terraform dir to runner tempdir
+        run: cp -r utils/build/terraform ${{ runner.temp }}/terraform
+      - name: Generate label to use for this runner
+        id: label-gen
+        run: echo "label=actions-runner-$(uuidgen)" >> "$GITHUB_OUTPUT"
+      - name: Initialise terraform
+        run: terraform init -input=false
+        working-directory: ${{ runner.temp }}/terraform
+      - name: Provision actions runner
+        run: terraform apply -auto-approve -var runner_label="${RUNNER_LABEL}"
+        working-directory: ${{ runner.temp }}/terraform
+        env:
+          RUNNER_LABEL: ${{ steps.label-gen.outputs.label }}
+      - name: Wait for init scripts to finish
+        run: sleep 60
+      - name: print gpg version
+        run: gpg --version
+      - name: Write passphrase for encrypting state file
+        run: echo "${STATE_PASSPHRASE}" > ${{ runner.temp }}/pass.txt
+        env:
+          STATE_PASSPHRASE: "${{ secrets.STATE_PASSPHRASE }}"
+      - name: Encrypt terraform state file
+        run: gpg --batch --symmetric --passphrase-file ${{ runner.temp }}/pass.txt terraform.tfstate
+        working-directory: ${{ runner.temp }}/terraform
+      - name: list dir
+        run: ls -l ${{ runner.temp }}/terraform
+      - name: Upload terraform state file as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-state
+          path: ${{ runner.temp }}/terraform/terraform.tfstate.gpg
+          if-no-files-found: error
+          retention-days: 2
+
+  build-placeholder:
+    name: Build on flexi
+    needs: provision-runner
+    runs-on: ${{ needs.provision-runner.outputs.label }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: print hostname
+        run: hostname
+      - name: show disk space
+        run: df -h
+      - name: show machine info
+        run: uname -a
+      - name: Run build script placeholder
+        run: src/placeholder.sh | tee placeholder.txt
+      - name: Upload output as aritifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: placeholder-output
+          path: placeholder.txt
+          retention-days: 7
+      # for tags only:
+      - name: Create a release and add the placeholder output file to it
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: placeholder.txt
+
+  destroy-runner:
+    name: Destroy the self-hosted runner
+    needs: build-placeholder
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    env:
+      TF_VAR_tenant_name: "${{ secrets.TENANT_NAME }}"
+      TF_VAR_key_pair: "${{ secrets.KEY_PAIR }}"
+      TF_VAR_github_token: "${{ secrets.TF_GITHUB_TOKEN }}"
+      TF_VAR_flavor_name: "${{ secrets.FLAVOR_NAME }}"
+      TF_VAR_github_org: "${{ github.repository_owner }}"
+      TF_VAR_github_repo: "LUMASS"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - name: Write clouds.yaml
+        run: |
+          import os
+          with open(os.environ['CLOUDS_YAML_FILE'], 'w') as fh:
+            fh.write(os.environ['CLOUDS_YAML_CONTENT'])
+        shell: python
+        env:
+          CLOUDS_YAML_FILE: "${{ runner.temp }}/clouds.yaml"
+          CLOUDS_YAML_CONTENT: "${{ secrets.CLOUDS_YAML_CONTENT }}"
+      - name: Link clouds.yaml
+        run: |
+          mkdir -p ~/.config/openstack
+          ln -sf ${CLOUDS_YAML_FILE} ~/.config/openstack/clouds.yaml
+        env:
+          CLOUDS_YAML_FILE: "${{ runner.temp }}/clouds.yaml"
+      - name: Copy terraform dir to runner tempdir
+        run: cp -r utils/build/terraform ${{ runner.temp }}/terraform
+      - name: Write passphrase for encrypting state file
+        run: echo "${STATE_PASSPHRASE}" > ${{ runner.temp }}/pass.txt
+        env:
+          STATE_PASSPHRASE: "${{ secrets.STATE_PASSPHRASE }}"
+      - name: Initialise terraform
+        run: terraform init -input=false
+        working-directory: ${{ runner.temp }}/terraform
+      - name: Download terraform state file
+        uses: actions/download-artifact@v4
+        with:
+          name: terraform-state
+          path: ${{ runner.temp }}/terraform
+      - name: Decrypt terraform state file
+        run: gpg --batch --decrypt --passphrase-file ${{ runner.temp }}/pass.txt terraform.tfstate.gpg > terraform.tfstate
+        working-directory: ${{ runner.temp }}/terraform
+      - name: Destroy resources
+        run: terraform destroy -auto-approve
+        working-directory: ${{ runner.temp }}/terraform
+      - name: Destroy state file artifact
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: terraform-state
