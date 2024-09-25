@@ -39,7 +39,7 @@ jobs:
         env:
           CLOUDS_YAML_FILE: "${{ runner.temp }}/clouds.yaml"
       - name: Copy terraform dir to runner tempdir
-        run: cp -r utils/build/terraform ${{ runner.temp }}/terraform
+        run: cp -r terraform ${{ runner.temp }}/terraform
       - name: Generate label to use for this runner
         id: label-gen
         run: echo "label=actions-runner-$(uuidgen)" >> "$GITHUB_OUTPUT"
@@ -130,7 +130,7 @@ jobs:
         env:
           CLOUDS_YAML_FILE: "${{ runner.temp }}/clouds.yaml"
       - name: Copy terraform dir to runner tempdir
-        run: cp -r utils/build/terraform ${{ runner.temp }}/terraform
+        run: cp -r terraform ${{ runner.temp }}/terraform
       - name: Write passphrase for encrypting state file
         run: echo "${STATE_PASSPHRASE}" > ${{ runner.temp }}/pass.txt
         env:
