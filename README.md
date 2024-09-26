@@ -34,6 +34,14 @@ the security group does not allow inbound connections. There is a [terraform var
 called `enable_debugging` that will add the floating ip and allow incoming SSH connections if set to true,
 which can be useful for debugging.
 
+## Security
+
+Self-hosted runners could be a security risk on public repositories if you allow pull requests to run the pipeline automatically
+as mentioned in the [GitHub docs](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners/about-self-hosted-runners#self-hosted-runner-security).
+Using the setup we have described in this repo, we take a similar approach as with the GitHub-hosted runners, by using a clean isolated virtual machine that is destroyed at the end of the job execution.
+For extra security you could set up approval for workflow runs from public forks as described
+[here](https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-workflow-runs/approving-workflow-runs-from-public-forks).
+
 ## LUMASS example
 
 A real example of how this pipeline could be used can be found in the *build-flexi* branch
@@ -49,11 +57,3 @@ An example of the CI pipeline can be found [here](https://github.com/chrisdjscot
 - the first step provisions the self-hosted runner on flexi
 - the second step builds lumass and uploads the *.AppImage* as an artifact of the build (for tags the workflow would create a release and upload the *.AppImage* file to that)
 - the third step destroys the resources that were created in the first step
-
-## Security
-
-Self-hosted runners could be a security risk on public repositories if you allow pull requests to run the pipeline automatically
-as mentioned in the [GitHub docs](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners/about-self-hosted-runners#self-hosted-runner-security).
-Using the setup we have described in this repo, we take a similar approach as with the GitHub-hosted runners, by using a clean isolated virtual machine that is destroyed at the end of the job execution.
-For extra security you could set up approval for workflow runs from public forks as described
-[here](https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-workflow-runs/approving-workflow-runs-from-public-forks).
