@@ -54,6 +54,6 @@ An example of the CI pipeline can be found [here](https://github.com/chrisdjscot
 
 Self-hosted runners could be a security risk on public repositories if you allow pull requests to run the pipeline automatically
 as mentioned in the [GitHub docs](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners/about-self-hosted-runners#self-hosted-runner-security).
-In this case, as with the GitHub hosted runners, we are also using a clean isolated virtual machine that is destroyed at the end of the job execution.
+Using the setup we have described in this repo, we take a similar approach as with the GitHub-hosted runners, by using a clean isolated virtual machine that is destroyed at the end of the job execution.
 For extra security you could set up approval for workflow runs from public forks as described
 [here](https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-workflow-runs/approving-workflow-runs-from-public-forks).
