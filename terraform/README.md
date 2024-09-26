@@ -6,11 +6,16 @@ The build is a three step process and runs via GitHub Actions CI:
 - Step 2: run the user-defined build step on the self-hosted runner created in Step 1 and upload the output as an artifact on the GitHub build (if we're building a tag, also create a release and upload the output to the release too)
 - Step 3: destroy the resources that were provisioned on Flexi in Step 1 (this step runs on a normal GitHub-hosted runner)
 
-Some configuration is required for the build to work. The following Actions secrets must be set on the GitHub repo:
+Some configuration is required for the build to work:
+
+- [Create application credentials](https://support.cloud.nesi.org.nz/user-guides/create-and-manage-identity/) and download the *clouds.yaml* file
+- [Create a key pair](https://support.cloud.nesi.org.nz/user-guides/create-and-manage-keypairs/)
+
+The following GitHub Actions secrets must be set on the GitHub repo:
 
 - `CLOUDS_YAML_CONTENT` should contain the content of the *clouds.yaml* for Flexi, with a single key named *openstack* (the default)
 - `FLAVOR_NAME` should be set to the appropriate VM flavor on Flexi, e.g. *balanced1.8cpu16ram*
 - `KEY_PAIR` should be set to the name of your key pair on Flexi, e.g. *my-key*
-- `STATE_PASSPHRASE` should be set to a passphrase that will be used to encrypt the terraform state file while it is temporarily stored as an artifact of the build
+- `STATE_PASSPHRASE` should be set to a passphrase that will be used to encrypt the terraform state file while it is temporarily stored as an artifact of the build (you don't need to remember this, it will only be used by the workflow)
 - `TENANT_NAME` should be set to the name of the project on Flexi, e.g. *NeSI-Internal-Sandbox*
 - `TF_GITHUB_TOKEN` should be a GitHub fine-grained access token with *Administration* repository permissions (write) on the repo, for more info [see here](https://docs.github.com/en/rest/actions/self-hosted-runners?apiVersion=2022-11-28#create-a-registration-token-for-a-repository)
