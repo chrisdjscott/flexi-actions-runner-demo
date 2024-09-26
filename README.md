@@ -53,7 +53,7 @@ of this [LUMASS fork](https://github.com/chrisdjscott/LUMASS/tree/build-flexi). 
 - the *.github/workflows/build.yml* file defining the CI pipeline with the three steps as described above
   - step 2 has been modified to run the LUMASS build scripts mentioned above
 
-An example of the CI pipeline can be found [here](https://github.com/chrisdjscott/LUMASS/actions/runs/10929797640):
+An example of the CI pipeline running can be found [here](https://github.com/chrisdjscott/LUMASS/actions/runs/10929797640):
 - the first step provisions the self-hosted runner on flexi
 - the second step builds lumass and uploads the *.AppImage* as an artifact of the build (for tags the workflow would create a release and upload the *.AppImage* file to that)
 - the third step destroys the resources that were created in the first step
