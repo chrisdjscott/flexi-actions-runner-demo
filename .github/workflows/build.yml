@@ -16,8 +16,6 @@ jobs:
       TF_VAR_key_pair: "${{ secrets.KEY_PAIR }}"
       TF_VAR_github_token: "${{ secrets.TF_GITHUB_TOKEN }}"
       TF_VAR_flavor_name: "${{ secrets.FLAVOR_NAME }}"
-      TF_VAR_github_org: "${{ github.repository_owner }}"
-      TF_VAR_github_repo: "flexi-actions-runner-demo"
     outputs:
       label: ${{ steps.label-gen.outputs.label }}
     steps:
@@ -45,13 +43,13 @@ jobs:
         run: echo "label=actions-runner-$(uuidgen)" >> "$GITHUB_OUTPUT"
       - name: Show terraform version
         run: terraform --version
-      - run: |
+      - name: Set repository name
+        run: |
           if [ ${{ github.event_name }} = 'pull_request' ]; then
-              echo "REPO=${{ github.event.pull_request.head.repo.full_name }}" >> $GITHUB_ENV
+              echo "TF_VAR_github_repo=${{ github.event.pull_request.head.repo.full_name }}" >> $GITHUB_ENV
           else
-              echo "REPO=$GITHUB_REPOSITORY" >> $GITHUB_ENV
+              echo "TF_VAR_github_repo=$GITHUB_REPOSITORY" >> $GITHUB_ENV
           fi
-      - run: echo "REPO is ${REPO}"
       - name: Initialise terraform
         run: terraform init -input=false
         working-directory: ${{ runner.temp }}/terraform
@@ -118,8 +116,6 @@ jobs:
       TF_VAR_key_pair: "${{ secrets.KEY_PAIR }}"
       TF_VAR_github_token: "${{ secrets.TF_GITHUB_TOKEN }}"
       TF_VAR_flavor_name: "${{ secrets.FLAVOR_NAME }}"
-      TF_VAR_github_org: "${{ github.repository_owner }}"
-      TF_VAR_github_repo: "LUMASS"
     steps:
       - uses: actions/checkout@v4
       - uses: hashicorp/setup-terraform@v3
@@ -144,6 +140,13 @@ jobs:
         run: echo "${STATE_PASSPHRASE}" > ${{ runner.temp }}/pass.txt
         env:
           STATE_PASSPHRASE: "${{ secrets.STATE_PASSPHRASE }}"
+      - name: Set repository name
+        run: |
+          if [ ${{ github.event_name }} = 'pull_request' ]; then
+              echo "TF_VAR_github_repo=${{ github.event.pull_request.head.repo.full_name }}" >> $GITHUB_ENV
+          else
+              echo "TF_VAR_github_repo=$GITHUB_REPOSITORY" >> $GITHUB_ENV
+          fi
       - name: Initialise terraform
         run: terraform init -input=false
         working-directory: ${{ runner.temp }}/terraform
