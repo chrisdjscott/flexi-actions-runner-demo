@@ -2,8 +2,8 @@
 
 This repository is an example of how you could run a self-hosted github
 actions runner on NeSI's Flexi-HPC cloud platform.
-You may want to do this if your build is very resource instensive (e.g. it takes
-very long, needs a lot of memory of compute power or disk space) and won't fit
+You may want to do this if your build is very resource intensive (e.g. it takes
+very long; needs a lot of memory, compute power or disk space; etc.) and won't fit
 within a normal GitHub-hosted actions runner. Another reason could be if your CI
 pipeline requires special resources, such as GPUs, to run.
 
@@ -16,8 +16,12 @@ main steps:
 - Step 2: run the user-defined build step on the self-hosted runner created in Step 1 and upload the output as an artifact on the GitHub build (if we're building a tag, also create a release and upload the output to the release too)
 - Step 3: destroy the resources that were provisioned on Flexi in Step 1 (this step runs on a normal GitHub-hosted runner)
 
-The [src](src) directory contains placeholder script that gets run during step 2 above.
+The [src](src) directory contains a placeholder script that gets run during step 2 above.
 This could be replaced with something real.
+
+You could copy the *terraform* directory and *build.yml* script into your own repository and
+edit step 2 in *build.yml* to build/run your own code. Some configuration is required as
+described in [terraform/README.md](terraform/README.md).
 
 ## LUMASS example
 
