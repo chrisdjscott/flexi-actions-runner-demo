@@ -22,8 +22,8 @@ variable "image_name" {
 }
 
 variable "runner_volume_size" {
-  description = "VM disk size (GB), defaults to 30"
-  default     = "30"
+  description = "VM disk size (GB), defaults to 10"
+  default     = "10"
 }
 
 variable "vm_user" {
