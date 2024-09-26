@@ -43,11 +43,11 @@ jobs:
       - name: Generate label to use for this runner
         id: label-gen
         run: echo "label=actions-runner-$(uuidgen)" >> "$GITHUB_OUTPUT"
-      - name: Show terraform version
-        run: terraform --version
       - name: Initialise terraform
         run: terraform init -input=false
         working-directory: ${{ runner.temp }}/terraform
+      - name: Show terraform version
+        run: terraform --version
       - name: Provision actions runner
         run: terraform apply -auto-approve -var runner_label="${RUNNER_LABEL}"
         working-directory: ${{ runner.temp }}/terraform
