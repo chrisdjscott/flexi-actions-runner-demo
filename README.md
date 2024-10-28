@@ -34,6 +34,13 @@ the security group does not allow inbound connections. There is a [terraform var
 called `enable_debugging` that will add the floating ip and allow incoming SSH connections if set to true,
 which can be useful for debugging.
 
+## Further work
+
+In this demo cloud-init is used to both install the GitHub Actions runner software and then launch it with the correct configuration
+to connect to the correct GitHub repo. The installation of the GitHub Actions runner could be moved into a custom image, which could
+then be used instead of the Ubuntu base image, leaving just the configure/launch step with cloud-init. We have not done this in
+this example in order to keep it simple.
+
 ## Security
 
 Self-hosted runners could be a security risk on public repositories if you allow pull requests to run the pipeline automatically
