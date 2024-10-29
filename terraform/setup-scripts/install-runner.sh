@@ -17,7 +17,7 @@ cat <<EOF > /home/ubuntu/install-runner.sh
     mkdir actions-runner && cd actions-runner
     echo "Download actions runner"
     curl -o actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz -L https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz
-    echo "${RUNNER_SHA256} actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz" | shasum -a 256 -c
+    echo "${RUNNER_SHA256}  actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz" | shasum -a 256 -c
     tar xzf ./actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz
 
     ACTIONS_URL="https://api.github.com/repos/\${GITHUB_REPO}/actions/runners/registration-token"
