@@ -18,4 +18,4 @@ The following GitHub Actions secrets must be set on the GitHub repo:
 - `KEY_PAIR` should be set to the name of your key pair on Flexi, e.g. *my-key*
 - `STATE_PASSPHRASE` should be set to a passphrase that will be used to encrypt the terraform state file while it is temporarily stored as an artifact of the build (you don't need to remember this, it will only be used by the workflow)
 - `TENANT_NAME` should be set to the name of the project on Flexi, e.g. *NeSI-Internal-Sandbox*
-- `TF_GITHUB_TOKEN` should be a GitHub fine-grained access token with *Administration* repository permissions (write) on the repo, for more info [see here](https://docs.github.com/en/rest/actions/self-hosted-runners?apiVersion=2022-11-28#create-a-registration-token-for-a-repository)
+- `TF_GITHUB_TOKEN` should be a GitHub fine-grained access token with *Administration* repository permissions (write) on the repo, or a classic personal access token with repo permissions, for more info [see here](https://docs.github.com/en/rest/actions/self-hosted-runners?apiVersion=2022-11-28#create-a-registration-token-for-a-repository)
